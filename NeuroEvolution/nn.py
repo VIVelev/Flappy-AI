@@ -43,15 +43,15 @@ class NeuralNetwork(object):
     def predict(self, x):
         output = np.matmul(self.hidden_layers[0].weights, np.transpose(x))
         output = np.add(np.transpose(output), self.hidden_layers[0].bias)
-        output = relu(output)
+        output = sigmoid(output)
 
         for layer in self.hidden_layers[1:]:
             output = np.matmul(layer.weights, np.transpose(output))
-            output = np.add(np.transpose(output), layer.bias)
-            output = relu(output)
+            output = np.add(np.transpose(output), layer.bias)           
+            output = sigmoid(output)
 
         output = np.matmul(self.output_layer.weights, np.transpose(output))
-        output = np.add(np.transpose(output), self.output_layer.bias)
+        output = np.add(np.transpose(output), self.output_layer.bias)    
         output = sigmoid(output)                    
 
         return output

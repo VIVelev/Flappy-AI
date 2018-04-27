@@ -1,6 +1,11 @@
 import numpy as np
 
-from flappybird import Game
+from Game.main import Game
 from NeuroEvolution.nn import NeuralNetwork
 
-neural_net = NeuralNetwork(n_hidden_layers=1, n_nodes=[6], n_inputs=2, n_classes=2)
+N_BIRDS = 10
+NEURAL_NETS = [NeuralNetwork() for _ in range(N_BIRDS)]
+
+game = Game(NEURAL_NETS)
+game.run()
+
