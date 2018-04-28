@@ -18,6 +18,7 @@ class Chromosome(object):
 
     def crossover(self, partner):
         child = Chromosome()
+
         child.genotype.output_layer.weights = np.divide(
             np.add(self.genotype.output_layer.weights, partner.genotype.output_layer.weights),
             2
@@ -27,7 +28,7 @@ class Chromosome(object):
             2
         )
 
-        for i in range(self.genotype.n_hidden_layers):
+        for i in range(self.genotype.n_hidden_layers):  
             child.genotype.hidden_layers[i].weights = np.divide(
                 np.add(self.genotype.hidden_layers[i].weights, partner.genotype.hidden_layers[i].weights),
                 2
@@ -59,5 +60,5 @@ class Chromosome(object):
                 if proba * 100 > rnd.randint(0, 100):
                     self.genotype.hidden_layers[k].bias[i] = rnd.random()
 
-    def calc_fitness(self, score, dist_from_start, dist_to_tube):
-        self.fitness = score*10**2 + dist_from_start - abs(dist_to_tube)
+    def calc_fitness(self, travelled_dist, dist_to_gap):      
+        self.fitness = travelled_dist - abs(dist_to_gap)

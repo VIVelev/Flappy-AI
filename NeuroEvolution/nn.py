@@ -52,6 +52,6 @@ class NeuralNetwork(object):
 
         output = np.matmul(self.output_layer.weights, np.transpose(output))
         output = np.add(np.transpose(output), self.output_layer.bias)    
-        output = sigmoid(output)                    
+        output = sigmoid(output)                  
 
         return output
