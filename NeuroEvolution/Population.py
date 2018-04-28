@@ -6,7 +6,7 @@ __all__ = [
 ]
 
 class Population(object):
-    def __init__(self, popmax, mutation_rate, n_winners=4):
+    def __init__(self, popmax, mutation_rate, n_winners=1):
         self.popmax = popmax
         self.mutation_rate = mutation_rate
         self.pop = []
@@ -43,14 +43,14 @@ class Population(object):
         if self.generation > 0:
             new_pop = []
 
-            # # Add n winners directly (n=4)
-            # fitnesses = [chrom.fitness for chrom in self.pop]            
-            # for _ in range(self.n_winners):
-            #     winner = fitnesses.index(max(fitnesses))
-            #     fitnesses[winner] = -10**9 
-            #     winner = self.pop[winner]
-            #     winner.mutate(self.mutation_rate)
-            #     new_pop.append(winner)                                               
+            # Add n winners directly (n=4)
+            fitnesses = [chrom.fitness for chrom in self.pop]            
+            for _ in range(self.n_winners):
+                winner = fitnesses.index(max(fitnesses))
+                fitnesses[winner] = -10**9 
+                winner = self.pop[winner]
+                winner.mutate(self.mutation_rate)
+                new_pop.append(winner)                                               
 
             # # One child of the two best birds
             # child = new_pop[0].crossover(new_pop[1])
@@ -71,7 +71,7 @@ class Population(object):
             #     rnd_bird.mutate(self.mutation_rate)
             #     new_pop.append(rnd_bird)     
             
-            for _ in range(self.popmax):
+            for _ in range(self.popmax-self.n_winners):
                 self.parent_selection()                
                 child = self.parents[0].crossover(self.parents[1])
                 child.mutate(self.mutation_rate)
