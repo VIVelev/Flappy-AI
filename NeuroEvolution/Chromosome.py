@@ -40,8 +40,24 @@ class Chromosome(object):
         return child
 
     def mutate(self, proba):
-        if proba * 100 > rnd.randint(0, 100):
-            pass
+        for i in range(len(self.genotype.output_layer.weights)):
+            for j in range(len(self.genotype.output_layer.weights[0])):
+                if proba * 100 > rnd.randint(0, 100):
+                    self.genotype.output_layer.weights[i][j] = rnd.random()
+
+        for i in range(len(self.genotype.output_layer.bias)):
+            if proba * 100 > rnd.randint(0, 100):
+                self.genotype.output_layer.bias[i] = rnd.random()
+
+        for k in range(self.genotype.n_hidden_layers):
+            for i in range(len(self.genotype.hidden_layers[k].weights)):
+                for j in range(len(self.genotype.hidden_layers[k].weights[0])):
+                    if proba * 100 > rnd.randint(0, 100):
+                        self.genotype.hidden_layers[k].weights[i][j] = rnd.random()
+
+            for i in range(len(self.genotype.hidden_layers[k].bias)):
+                if proba * 100 > rnd.randint(0, 100):
+                    self.genotype.hidden_layers[k].bias[i] = rnd.random()
 
     def calc_fitness(self, score, dist_from_start, dist_to_tube):
-        self.fitness = score**2 + dist_from_start - dist_to_tube
+        self.fitness = score*10**2 + dist_from_start - abs(dist_to_tube)

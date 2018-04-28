@@ -14,8 +14,20 @@ __all__ = [
 
 class Game(object):
     def __init__(self, population, n_birds=10):
+        self.setup()
+
+        self.n_birds = n_birds
+        self.n_dead_birds = 0
+        self.population = population
+
+        self.states = ["dead" for _ in range(n_birds)]
+        self.scores = [0 for _ in range(n_birds)]
+        self.best = 0
+
+    def setup(self):
+        clearscreen()        
         screensize(216, 500)
-        bgpic("./assets/img/bg1.gif")        
+        bgpic("./assets/img/bg1.gif")     
         setup(288, 512)
         tracer(False, 0)
         hideturtle()
@@ -32,17 +44,15 @@ class Game(object):
         self.tubes = [(GIFTurtle("./assets/img/tube1"), GIFTurtle("./assets/img/tube2")) for i in range(3)]
         self.grounds = [GIFTurtle("./assets/img/ground") for i in range(3)]
 
-        self.n_birds = n_birds
-        self.n_dead_birds = 0
-        self.birds = population
-
-        self.states = ["dead" for _ in range(n_birds)]
-        self.scores = [0 for _ in range(n_birds)]
-        self.best = 0
-
     def start_game(self):
+        self.setup()
+
+        self.population.status()
+        self.population.generate()
+        self.birds = [Bird(self.population.pop[i]) for i in range(self.n_birds)]
+        self.n_dead_birds = 0                
+
         self.best = max(*self.scores, self.best)
-        self.n_dead_birds = 0        
         self.tubes_y = [1000] * 3
         self.hit_t, self.hit_y = [0 for _ in range(self.n_birds)], [0 for _ in range(self.n_birds)]
         self.states = ["alive" for _ in range(self.n_birds)]
@@ -56,29 +66,25 @@ class Game(object):
 
     def update_game(self):
         for i in range(self.n_birds):
-            if self.states[i] == "dead":
-                self.n_dead_birds += 1 
+            if self.states[i] == "alive":
+                vertical_dist = self.birds[i].body.ycor() - (self.tubes[-1][0].ycor() + self.tubes[-1][1].ycor())/2
+                vertical_dist /= 1000
+                horizontal_dist = self.tubes[-1][0].xcor()
+                horizontal_dist /= 1000
+                if self.birds[i].should_fly([vertical_dist, horizontal_dist]) >= 0.5:
+                    self.fly(i)
+    
+        t = time() - self.start_time    
+        x = int(t * self.speed_x)
         
-        if self.n_dead_birds == self.n_birds:
-            sleep(1)
-            self.fly(0)
-            return
-
-        for i in range(self.n_birds):
-            vertical_dist = self.birds[i].body.ycor() - (self.tubes[-1][0].ycor() + self.tubes[-1][1].ycor())/2
-            vertical_dist /= 1000
-            horizontal_dist = self.tubes[-1][0].xcor()          
-            if self.birds[i].should_fly([vertical_dist, horizontal_dist]) >= 0.5:
-                self.fly(i)
-
-        t = time() - self.start_time
         birds_y = [self.compute_y(t, i) for i in range(self.n_birds)]
         for i in range(self.n_birds):
             if birds_y[i] <= self.ground_line:
                 birds_y[i] = self.ground_line
                 self.states[i] = "dead"
+                dist_to_tube = self.birds[i].body.ycor() - (self.tubes[-1][0].ycor() + self.tubes[-1][1].ycor())/2                
+                self.birds[i].brain.calc_fitness(self.scores[i], x, int(dist_to_tube))
                       
-        x = int(t * self.speed_x)
         tube_base = -(x % self.tube_dist) - 40
         if self.tube_base < tube_base:
             if self.tubes_y[2] < 1000:
@@ -111,23 +117,40 @@ class Game(object):
             for i in range(self.n_birds):
                 if (tube_left < 18 and tube_right > -18) and birds_y[i] - 12 <= tube_lower:
                     self.states[i] = "dead"
+                    dist_to_tube = self.birds[i].body.ycor() - (self.tubes[-1][0].ycor() + self.tubes[-1][1].ycor())/2                
+                    self.birds[i].brain.calc_fitness(self.scores[i], x, int(dist_to_tube))
                 if (tube_left <= 8 and tube_right >= -8) and birds_y[i] + 12 >= tube_upper:
                     self.states[i] = "dead"
+                    dist_to_tube = self.birds[i].body.ycor() - (self.tubes[-1][0].ycor() + self.tubes[-1][1].ycor())/2                
+                    self.birds[i].brain.calc_fitness(self.scores[i], x, int(dist_to_tube))
                 if abs(lvecs[i]) < 14 or abs(rvecs[i]) < 14:
                     self.states[i] = "dead"
+                    dist_to_tube = self.birds[i].body.ycor() - (self.tubes[-1][0].ycor() + self.tubes[-1][1].ycor())/2                
+                    self.birds[i].brain.calc_fitness(self.scores[i], x, int(dist_to_tube))
 
         bg_base = -(x % self.bg_width)
         for i in range(3):
             self.grounds[i].goto(bg_base + self.bg_width * (i - 1), -200)
 
         for i in range(self.n_birds):
-            self.birds[i].body.shape("./assets/img/bird%d.gif" % abs(int(t * 4) % 4 - 1))
-            self.birds[i].body.goto(0, birds_y[i])
+            if self.states[i] == "alive":            
+                self.birds[i].body.shape("./assets/img/bird%d.gif" % abs(int(t * 4) % 4 - 1))
+                self.birds[i].body.goto(0, birds_y[i])
 
         if self.best:
             self.best_txt.clear()
             self.best_txt.write(
                 "BEST: %d" % (self.best), align="center", font=(self.font_name, 14, "bold"))
+
+        self.n_dead_birds = 0
+        for i in range(self.n_birds):
+            if self.states[i] == "dead":
+                self.n_dead_birds += 1 
+        
+        if self.n_dead_birds == self.n_birds:
+            sleep(1)
+            self.start_game()
+            return
 
         update()
         ontimer(lambda: self.update_game(), 10)
@@ -145,3 +168,4 @@ class Game(object):
     def run(self):
         self.fly(0)
         mainloop()
+        sys.exit(1)
