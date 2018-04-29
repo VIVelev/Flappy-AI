@@ -57,7 +57,7 @@ class Game(object):
         self.states = ["alive" for _ in range(self.n_birds)]        
         
         self.tubes_y = [1000, 1000, 0]
-        self.tube_base = 0        
+        self.tube_base = 0 
 
         self.hit_t, self.hit_y = [0 for _ in range(self.n_birds)], [0 for _ in range(self.n_birds)]
         self.start_time = time()
@@ -68,7 +68,7 @@ class Game(object):
         return self.hit_y[bird_i] - 100 * (t - self.hit_t[bird_i]) * (t - self.hit_t[bird_i] - 1)
 
     def update_game(self):
-        # Birds' decisions to flap or not
+        # Birds' decisions: to flap or not
         for i in range(self.n_birds):
             if self.states[i] == "alive":
                 vertical_dist = self.birds[i].body.ycor() - (self.tubes[-1][0].ycor() + self.tubes[-1][1].ycor())/2
@@ -76,21 +76,21 @@ class Game(object):
                 if self.birds[i].should_fly([vertical_dist, horizontal_dist]) >= 0.5:
                     self.fly(i)
                               
-    
         t = time() - self.start_time    
         x = int(t * self.speed_x)
-        
         birds_y = [self.compute_y(t, i) for i in range(self.n_birds)]
+        
+        # Check if a bird has hit the ground => dead
         for i in range(self.n_birds):
             if birds_y[i] <= self.ground_line and self.states[i] == "alive":
                 birds_y[i] = self.ground_line
                 self.states[i] = "dead"
-                self.birds[i].body.reset()
-                self.birds[i].body.clear() 
 
                 vertical_dist = self.birds[i].body.ycor() - (self.tubes[-1][0].ycor() + self.tubes[-1][1].ycor())/2                
                 self.birds[i].brain.calc_fitness(x, int(vertical_dist))
-                      
+                self.birds[i].body.goto(-1000, -1000)            
+
+        # Move tubes        
         tube_base = -(x % self.tube_dist) - 40
         if self.tube_base < tube_base:
             if self.tubes_y[2] < 1000:
@@ -100,13 +100,15 @@ class Game(object):
 
             self.tubes_y = self.tubes_y[1:] + [randint(-100, 50)]
         self.tube_base = tube_base
-
+        
+        # Move tubes
         for i in range(3):
             self.tubes[i][0].goto(
                 tube_base + self.tube_dist * (i - 1), 200+self.tube_gap + self.tubes_y[i])
             self.tubes[i][1].goto(
                 tube_base + self.tube_dist * (i - 1), -100-self.tube_gap + self.tubes_y[i])
 
+        # Check if a bird should be dead        
         if self.tubes_y[2] < 1000:
             tube_left = tube_base + self.tube_dist - 28
             tube_right = tube_base + self.tube_dist + 28
@@ -120,34 +122,35 @@ class Game(object):
                 lvecs.append(Vec2D(tube_left, tube_upper) - center)
                 rvecs.append(Vec2D(tube_right, tube_upper) - center)
 
-            # Check if a bird should be dead
             t = time() - self.start_time    
             x = int(t * self.speed_x)
             for i in range(self.n_birds):
-                if (tube_left < 18 and tube_right > -18) and birds_y[i] - 12 <= tube_lower and self.states[i] == "alive":
-                    self.states[i] = "dead"
-                    self.birds[i].body.reset()
-                    self.birds[i].body.clear() 
+                if self.states[i] == "alive":
+                    if (tube_left < 18 and tube_right > -18) and birds_y[i] - 12 <= tube_lower:
+                        self.states[i] = "dead"
 
-                    vertical_dist = self.birds[i].body.ycor() - (self.tubes[-1][0].ycor() + self.tubes[-1][1].ycor())/2                    
-                    self.birds[i].brain.calc_fitness(x, int(vertical_dist))
+                        vertical_dist = self.birds[i].body.ycor() - (self.tubes[-1][0].ycor() + self.tubes[-1][1].ycor())/2                    
+                        self.birds[i].brain.calc_fitness(x, int(vertical_dist))
+                        self.birds[i].body.goto(-1000, -1000)                 
 
-                if (tube_left <= 8 and tube_right >= -8) and birds_y[i] + 12 >= tube_upper and self.states[i] == "alive":
-                    self.states[i] = "dead"
-                    self.birds[i].body.reset()
-                    self.birds[i].body.clear() 
+                    elif (tube_left <= 8 and tube_right >= -8) and birds_y[i] + 12 >= tube_upper:
+                        self.states[i] = "dead"
 
-                    vertical_dist = self.birds[i].body.ycor() - (self.tubes[-1][0].ycor() + self.tubes[-1][1].ycor())/2                        
-                    self.birds[i].brain.calc_fitness(x, int(vertical_dist))
+                        vertical_dist = self.birds[i].body.ycor() - (self.tubes[-1][0].ycor() + self.tubes[-1][1].ycor())/2                        
+                        self.birds[i].brain.calc_fitness(x, int(vertical_dist))
+                        self.birds[i].body.goto(-1000, -1000)                    
 
-                if abs(lvecs[i]) < 14 or abs(rvecs[i]) < 14 and self.states[i] == "alive":
-                    self.states[i] = "dead"
-                    self.birds[i].body.reset()
-                    self.birds[i].body.clear() 
+                    elif abs(lvecs[i]) < 14 or abs(rvecs[i]) < 14:
+                        self.states[i] = "dead"
 
-                    vertical_dist = self.birds[i].body.ycor() - (self.tubes[-1][0].ycor() + self.tubes[-1][1].ycor())/2                    
-                    self.birds[i].brain.calc_fitness(x, int(vertical_dist))
+                        vertical_dist = self.birds[i].body.ycor() - (self.tubes[-1][0].ycor() + self.tubes[-1][1].ycor())/2                    
+                        self.birds[i].brain.calc_fitness(x, int(vertical_dist))
+                        self.birds[i].body.goto(-1000, -1000) 
 
+                    else:
+                        pass                   
+
+        # Move grounds
         bg_base = -(x % self.bg_width)
         for i in range(3):
             self.grounds[i].goto(bg_base + self.bg_width * (i - 1), -200)
@@ -176,10 +179,6 @@ class Game(object):
         ontimer(lambda: self.update_game(), 10)
 
     def fly(self, bird_i):
-        if "alive" not in self.states:
-            self.start_game()
-            return
-
         t = time() - self.start_time
         bird_y = self.compute_y(t, bird_i)
         if bird_y > self.ground_line:

@@ -60,5 +60,5 @@ class Chromosome(object):
                 if proba * 100 > rnd.randint(0, 100):
                     self.genotype.hidden_layers[k].bias[i] = rnd.random()
 
-    def calc_fitness(self, travelled_dist, dist_to_gap):      
+    def calc_fitness(self, travelled_dist, dist_to_gap):    
         self.fitness = travelled_dist - abs(dist_to_gap)

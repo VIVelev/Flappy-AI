@@ -43,33 +43,14 @@ class Population(object):
         if self.generation > 0:
             new_pop = []
 
-            # Add n winners directly (n=4)
+            # Add n winners directly
             fitnesses = [chrom.fitness for chrom in self.pop]            
             for _ in range(self.n_winners):
                 winner = fitnesses.index(max(fitnesses))
                 fitnesses[winner] = -10**9 
                 winner = self.pop[winner]
                 winner.mutate(self.mutation_rate)
-                new_pop.append(winner)                                               
-
-            # # One child of the two best birds
-            # child = new_pop[0].crossover(new_pop[1])
-            # child.mutate(self.mutation_rate)
-            # new_pop.append(child)
-
-            # # Three children of random parents
-            # for _ in range(3):
-            #     partner_A = self.pop[rnd.randint(0, self.popmax-1)]
-            #     partner_B = self.pop[rnd.randint(0, self.popmax-1)]
-            #     child = partner_A.crossover(partner_B)
-            #     child.mutate(self.mutation_rate)
-            #     new_pop.append(child)
-
-            # # Add two random birds
-            # for _ in range(2):
-            #     rnd_bird = self.pop[rnd.randint(0, self.popmax-1)]
-            #     rnd_bird.mutate(self.mutation_rate)
-            #     new_pop.append(rnd_bird)     
+                new_pop.append(winner)    
             
             for _ in range(self.popmax-self.n_winners):
                 self.parent_selection()                
@@ -87,7 +68,10 @@ class Population(object):
     def status(self):
         if self.generation > 0:
             print("Generation", self.generation)
-            for i in range(self.popmax):
-                print(i, "th chromosome's fitness: ", self.pop[i].fitness)
+            fitnesses = [chrom.fitness for chrom in self.pop]
+            print("Mean fitness:", sum(fitnesses)/self.popmax)
+            print("Best fitness:", max(fitnesses))
+            print("Population size", self.popmax)
+            print("Mutation rate", self.mutation_rate)
             print("---------------------------")
             print()
