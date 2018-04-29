@@ -7,7 +7,10 @@ __all__ = [
 
 def sigmoid(x):
     for i in range(len(x)):
-        x[i] = 1 / (1 + exp(-x[i]))
+        try:
+            x[i] = 1 / (1 + exp(-x[i]))
+        except OverflowError:
+            x[i] = 1.00
 
     return x
 

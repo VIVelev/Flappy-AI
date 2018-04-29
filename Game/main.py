@@ -23,7 +23,7 @@ class Game(object):
         self.scores = [0 for _ in range(self.n_birds)]        
         self.states = ["dead" for _ in range(self.n_birds)]
 
-        self.tube_gap = 50   
+        self.tube_gap = 50  
         self.tube_dist = 230  
         self.speed_x = 100
         self.ground_line = -200 + 56 + 12 
@@ -57,7 +57,7 @@ class Game(object):
         self.states = ["alive" for _ in range(self.n_birds)]        
         
         self.tubes_y = [1000, 1000, 0]
-        self.tube_base = 0 
+        self.tube_base = 0
 
         self.hit_t, self.hit_y = [0 for _ in range(self.n_birds)], [0 for _ in range(self.n_birds)]
         self.start_time = time()
