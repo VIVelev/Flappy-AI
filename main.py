@@ -3,7 +3,7 @@ import numpy as np
 from Game.main import Game
 from NeuroEvolution.Population import Population
 
-N_BIRDS = 50
+N_BIRDS = 20
 MUTATION_RATE = 0.05
 N_WINNERS = 2
 
