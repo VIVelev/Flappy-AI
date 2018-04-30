@@ -51,7 +51,7 @@ class Population(object):
                 winner = self.pop[winner]
                 winner.mutate(self.mutation_rate)
                 new_pop.append(winner)    
-            
+
             for _ in range(self.popmax-self.n_winners):
                 self.parent_selection()                
                 child = self.parents[0].crossover(self.parents[1])

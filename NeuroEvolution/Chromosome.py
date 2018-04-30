@@ -44,21 +44,21 @@ class Chromosome(object):
         for i in range(len(self.genotype.output_layer.weights)):
             for j in range(len(self.genotype.output_layer.weights[0])):
                 if proba * 100 > rnd.randint(0, 100):
-                    self.genotype.output_layer.weights[i][j] = rnd.random()
+                    self.genotype.output_layer.weights[i][j] = np.random.randn(1)
 
         for i in range(len(self.genotype.output_layer.bias)):
             if proba * 100 > rnd.randint(0, 100):
-                self.genotype.output_layer.bias[i] = rnd.random()
+                self.genotype.output_layer.bias[i] = np.random.randn(1)
 
         for k in range(self.genotype.n_hidden_layers):
             for i in range(len(self.genotype.hidden_layers[k].weights)):
                 for j in range(len(self.genotype.hidden_layers[k].weights[0])):
                     if proba * 100 > rnd.randint(0, 100):
-                        self.genotype.hidden_layers[k].weights[i][j] = rnd.random()
+                        self.genotype.hidden_layers[k].weights[i][j] = np.random.randn(1)
 
             for i in range(len(self.genotype.hidden_layers[k].bias)):
                 if proba * 100 > rnd.randint(0, 100):
-                    self.genotype.hidden_layers[k].bias[i] = rnd.random()
+                    self.genotype.hidden_layers[k].bias[i] = np.random.randn(1)
 
     def calc_fitness(self, travelled_dist, dist_to_gap):    
         self.fitness = travelled_dist - abs(dist_to_gap)
