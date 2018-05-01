@@ -19,7 +19,10 @@ class Game(object):
         self.population = population
 
         self.best = 0
-        self.best_txt = TextTurtle(90, 180, "white")  
+        self.best_txt = TextTurtle(90, 180, "white")
+        self.score_txt = TextTurtle(90, 200, "white")
+        self.birds_status_txt = TextTurtle(-90, 200, "white")
+
         self.scores = [0 for _ in range(self.n_birds)]        
         self.states = ["dead" for _ in range(self.n_birds)]
 
@@ -90,7 +93,7 @@ class Game(object):
                 self.birds[i].brain.calc_fitness(x, int(vertical_dist))
                 self.birds[i].body.goto(-1000, -1000)            
 
-        # Move tubes        
+        # Reward birds (increment scores)   
         tube_base = -(x % self.tube_dist) - 40
         if self.tube_base < tube_base:
             if self.tubes_y[2] < 1000:
@@ -161,11 +164,18 @@ class Game(object):
                 self.birds[i].body.shape("./assets/img/bird%d.gif" % abs(int(t * 4) % 4 - 1))
                 self.birds[i].body.goto(0, birds_y[i])
 
+        # Write score
+        self.score_txt.clear()
+        self.score_txt.write(
+            "SCORE: %d" % max(self.scores), align="center", font=(self.font_name, 14, "bold")
+        )
+
         # Write best score
         if self.best:
             self.best_txt.clear()
             self.best_txt.write(
-                "BEST: %d" % (self.best), align="center", font=(self.font_name, 14, "bold"))
+                "BEST: %d" % (self.best), align="center", font=(self.font_name, 14, "bold")
+            )
 
         # Check if the population is dead
         self.n_dead_birds = self.states.count("dead")
@@ -173,6 +183,12 @@ class Game(object):
             sleep(0.1)
             self.start_game()
             return
+
+        # Write birds' status
+        self.birds_status_txt.clear()
+        self.birds_status_txt.write(
+            "BIRDS %d/%d" % (self.n_birds-self.n_dead_birds, self.n_birds), align="center", font=(self.font_name, 14, "bold")
+        )
 
         # UPDATE
         update()
